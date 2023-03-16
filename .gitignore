@@ -178,3 +178,6 @@ pyrightconfig.json
 *.pt
 *.pth
 *runs
+
+dataset/*
+!dataset/.gitkeep
