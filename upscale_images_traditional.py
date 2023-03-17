@@ -11,6 +11,11 @@ parser.add_argument('--dataset_path', help='path to the list of dataset director
 parser.add_argument('--img_dir', help='directory of images', default='images')
 args = parser.parse_args()
 
+interpolations = {
+                    "bilinear": cv2.INTER_LINEAR,
+                    "bicubic": cv2.INTER_CUBIC,
+                    "lanczos": cv2.INTER_LANCZOS4
+                }
 
 datasets = next(os.walk(args.dataset_path))[1]
 
