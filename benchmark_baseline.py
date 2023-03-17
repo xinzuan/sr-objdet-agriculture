@@ -13,8 +13,11 @@ dataset_configs = {
 }
 
 for dataset in datasets:
+    if dataset.endswith('.zip') or dataset.endswith('.gitkeep'):
+        continue
+
     train_command = [
-        'python train.py --workers 8 --device 0 --batch-size 32 --epoch 300',
+        'python train.py --workers 8 --device 0 --batch-size 16 --epoch 300',
         '--cfg cfg/training/yolov7.yaml --weights yolov7_training.pt --hyp data/hyp.scratch.custom.yaml',
         f'--data ../../dataset/{dataset}/config.yaml',
         f'--img-size {dataset_configs[dataset]} {dataset_configs[dataset]}',
@@ -25,11 +28,11 @@ for dataset in datasets:
     subprocess.call(train_command, cwd='./object_detectors/yolov7')
 
     test_command = [
-        f'python test.py --device 0 --weights ../../results/baseline/yolov7/train/{dataset}/weights/best.pt'
-        f'--data ../../dataset/{dataset}/config.yaml'
-        f'--img-size {dataset_configs[dataset]} --batch 32 --conf 0.001 --iou 0.65'
-        f'--task test --name {dataset}'
-        '--project ../../results/baseline/yolov7/test'
+        f'python test.py --device 0 --weights ../../results/baseline/yolov7/train/{dataset}/weights/best.pt',
+        f'--data ../../dataset/{dataset}/config.yaml',
+        f'--img-size {dataset_configs[dataset]} --batch 16',
+        f'--task test --name {dataset}',
+        '--project ../../results/baseline/yolov7/test',
     ]
     test_command = ' '.join(test_command).split(' ')
     subprocess.call(test_command, cwd='./object_detectors/yolov7')
