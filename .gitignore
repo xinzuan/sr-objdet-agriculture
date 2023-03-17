@@ -181,3 +181,6 @@ pyrightconfig.json
 
 dataset/*
 !dataset/.gitkeep
+
+results/*
+!results/.gitkeep

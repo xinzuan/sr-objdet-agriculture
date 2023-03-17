@@ -19,15 +19,17 @@ for dataset in datasets:
         f'--data ../../dataset/{dataset}/config.yaml',
         f'--img-size {dataset_configs[dataset]} {dataset_configs[dataset]}',
         f'--name {dataset}',
+        '--project ../../results/baseline/yolov7/train'
     ]
     train_command = ' '.join(train_command).split(' ')
     subprocess.call(train_command, cwd='./object_detectors/yolov7')
 
     test_command = [
-        f'python test.py --device 0 --weights runs/train/{dataset}/weights/best.pt'
+        f'python test.py --device 0 --weights ../../results/baseline/yolov7/train/{dataset}/weights/best.pt'
         f'--data ../../dataset/{dataset}/config.yaml'
         f'--img-size {dataset_configs[dataset]} --batch 32 --conf 0.001 --iou 0.65'
         f'--task test --name {dataset}'
+        '--project ../../results/baseline/yolov7/test'
     ]
     test_command = ' '.join(test_command).split(' ')
     subprocess.call(test_command, cwd='./object_detectors/yolov7')
