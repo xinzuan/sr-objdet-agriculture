@@ -5,10 +5,10 @@ from tqdm import tqdm
 import argparse
 
 parser = argparse.ArgumentParser(description='Upscale images with traditional approaches')
-parser.add_argument('--scale', help='scaling factor', choices=[2, 4], default=2)
+parser.add_argument('--scale', type=int, help='scaling factor', choices=[2, 4], default=2)
 parser.add_argument('--interpolation', help='interpolation method', choices=['bilinear', 'bicubic', 'lanczos'], default='bilinear')
-parser.add_argument('--dataset_path', help='path to the list of dataset directory', default='dataset/')
-parser.add_argument('--img_dir', help='directory of images', default='images')
+parser.add_argument('--dataset-path', help='path to the list of dataset directory', default='dataset/')
+parser.add_argument('--img-dir', help='directory of images', default='images')
 args = parser.parse_args()
 
 interpolations = {
@@ -24,7 +24,7 @@ def upscale_images(data_path):
     """
     img_path = os.path.join(data_path, args.img_dir)
 
-    for image_name in os.listdir(img_path):
+    for image_name in tqdm(os.listdir(img_path)):
 
         img = cv2.imread(os.path.join(img_path, image_name), cv2.IMREAD_UNCHANGED)
         # print('Original Dimensions : ',img.shape)
@@ -42,10 +42,11 @@ def upscale_images(data_path):
         cv2.imwrite(os.path.join(upscaled_img_path, image_name), resized_img)
 
 
-for dataset in tqdm(datasets):
-    train_path = os.path.join(dataset, 'train')
-    val_path = os.path.join(dataset, 'val')
-    test_path = os.path.join(dataset, 'test')
+for dataset in datasets:
+    print(f'Upscaling images in dataset: {dataset}')
+    train_path = os.path.join(args.dataset_path, dataset, 'train')
+    val_path = os.path.join(args.dataset_path, dataset, 'val')
+    test_path = os.path.join(args.dataset_path, dataset, 'test')
 
     upscale_images(train_path)
     upscale_images(val_path)
