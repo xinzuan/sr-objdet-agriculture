@@ -14,18 +14,39 @@ parser.add_argument('--sr-multiplier', type=int, help='Resolution upscaling mult
 parser.add_argument('--device', default='0', help='Cuda device, i.e. 0 or 0,1,2,3 or cpu')
 parser.add_argument('--workers', type=int, default=8, help='Number of data loading workers')
 parser.add_argument('--batch-size', type=int, default=16, help='Batch size')
-parser.add_argument('--epoch', type=int, default=300, help='Total training epochs')
+parser.add_argument('--total-iterations', type=int, default=5000, help='Total training iterations')
 parser.add_argument('--dataset-path', type=str, default='dataset', help='Path to root dataset directory')
 args = parser.parse_args()
 
 dataset_configs = {
-    'apple_detection_drone_brazil': 256,
-    'apple_detection_spain': 512,
-    'apple_detection_usa': 640,
-    'fruit_detection_worldwide': 800,
-    'grape_detection_californianight': 416,
-    'mango_detection_australia': 512,
-    'wheat_head_counting': 512
+    'apple_detection_drone_brazil': {
+        'img_res': 256,
+        'total_train_imgs': 483
+    },
+    'apple_detection_spain': {
+        'img_res': 512,
+        'total_train_imgs': 677
+    },
+    'apple_detection_usa': {
+        'img_res': 640,
+        'total_train_imgs': 1598
+    },
+    'fruit_detection_worldwide': {
+        'img_res': 800,
+        'total_train_imgs': 395
+    },
+    'grape_detection_californianight': {
+        'img_res': 416,
+        'total_train_imgs': 106
+    },
+    'mango_detection_australia': {
+        'img_res': 512,
+        'total_train_imgs': 870
+    },
+    'wheat_head_counting': {
+        'img_res': 512,
+        'total_train_imgs': 4558
+    },
 }
 
 def run_if_exists(path, func):
@@ -70,11 +91,15 @@ for dataset in datasets:
     run_if_exists(os.path.join(os.path.abspath(dataset_path), dataset, 'val', 'labels.cache'), os.remove)
     run_if_exists(os.path.join(os.path.abspath(dataset_path), dataset, 'test', 'labels.cache'), os.remove)
 
+    total_train_imgs = dataset_configs[dataset]['total_train_imgs']
+    img_res = dataset_configs[dataset]['img_res']
+    epoch = args.total_iterations // (total_train_imgs // args.batch_size)
+
     train_command = [
-        f'python train.py --workers {args.workers} --device {args.device} --batch-size {args.batch_size} --epoch {args.epoch}',
+        f'python train.py --workers {args.workers} --device {args.device} --batch-size {args.batch_size} --epoch {epoch}',
         '--cfg cfg/training/yolov7.yaml --weights yolov7_training.pt --hyp data/hyp.scratch.custom.yaml',
         f'--data ../../dataset/{dataset}/config.yaml',
-        f'--img-size {dataset_configs[dataset] * args.sr_multiplier} {dataset_configs[dataset] * args.sr_multiplier}',
+        f'--img-size {img_res * args.sr_multiplier} {img_res * args.sr_multiplier}',
         f'--name {dataset}',
         f'--project ../../results/{args.benchmark_type}/yolov7/train'
     ]
@@ -85,7 +110,7 @@ for dataset in datasets:
     test_command = [
         f'python test.py --device 0 --weights ../../results/{args.benchmark_type}/yolov7/train/{dataset}/weights/best.pt',
         f'--data ../../dataset/{dataset}/config.yaml',
-        f'--img-size {dataset_configs[dataset] * args.sr_multiplier} --batch 16',
+        f'--img-size {img_res * args.sr_multiplier} --batch 16',
         f'--task test --name {dataset}',
         f'--project ../../results/{args.benchmark_type}/yolov7/test',
     ]
