@@ -35,6 +35,7 @@ def main():
     parser.add_argument('--type', type=str, default=None, help='train/val/test images')
     parser.add_argument('--folder_name', type=str, default=None, help='Name of image folder')    
     parser.add_argument('--agri', type=str, default=None, help='Name of agriculture folder')
+    parser.add_argument('--downsample', action='store_true')
 
     args = parser.parse_args()
 
@@ -209,6 +210,8 @@ def setup(args):
     elif args.task in ['real_sr']:
         dataset_folder = os.path.join( os.path.join(args.folder_lq, args.agri), args.type)
         save_dir = f'{dataset_folder}/swinir_{args.task}_x{args.scale}'
+        if args.downsample:
+            save_dir = f'{dataset_folder}/downscale_swinir_{args.task}_x{args.scale}'
         if args.large_model:
             save_dir += '_large'
         folder = os.path.join(dataset_folder,args.folder_name)
@@ -243,19 +246,19 @@ def get_image_pair(args, path):
 
     # 003 real-world image sr (load lq image only)
     elif args.task in ['real_sr']:
-        ds = 4
+        ds = args.scale
         img_gt = None
         img_lq = cv2.imread(path, cv2.IMREAD_COLOR).astype(np.float32) / 255.
-        # width = (int(img.shape[1]) //ds)*ds
-        # height = (int(img.shape[0])//ds)*ds
-        # dim = (width, height)
-        # hr = cv2.resize(img, dim, interpolation = cv2.INTER_CUBIC)
+
+        if args.downsample:
 
 
-        # width = int(hr.shape[1])//ds
-        # height = int(hr.shape[0])//ds
-        # dim = (width, height)
-        # img_lq = cv2.resize(img, dim, interpolation = cv2.INTER_CUBIC)
+
+            width = int(img_lq.shape[1])//ds
+            height = int(img_lq.shape[0])//ds
+            dim = (width, height)
+            #resamples the image using pixel area relation. This method is useful when reducing the size of an image, and can produce a better output than other interpolation methods when downscaling. 
+            img_lq = cv2.resize(img_lq, dim, interpolation = cv2.INTER_AREA)
 
     # 004 grayscale image denoising (load gt image and generate lq image on-the-fly)
     elif args.task in ['gray_dn']:

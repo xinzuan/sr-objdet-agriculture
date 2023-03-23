@@ -101,8 +101,9 @@ for data in subfolders:
         ori_val = os.path.join(dataset_folder,args.folder_name)
         # if t == 'train':
         #     ori_val = img_dir+data+'/'+t+'/ori/'
-        
         save_path = f'{dataset_folder}/fsrcnn_x{args.scale}'
+        if args.downsample:
+            save_path = f'{dataset_folder}/downsample_fsrcnn_x{args.scale}'
         print(save_path)
         if os.path.exists(save_path) and os.path.isdir(save_path):
             shutil.rmtree(save_path)
@@ -118,24 +119,19 @@ for data in subfolders:
 
 
             try:
-                img =  pil_image.open(name).convert('RGB')
-                width = (img.width//args.scale)*args.scale
-                height = (img.height//args.scale)*args.scale
-                dim = (width, height)
-
-                hr = img.resize(dim, resample=pil_image.BICUBIC)
+                img =  cv2.imread(name, cv2.IMREAD_COLOR)
+                
 
                 if args.downsample:
-                    width = hr.width//args.scale
-                    height = hr.height//args.scale
+                    width = img.shape[1]//args.scale
+                    height = img.shape[0]//args.scale
                     dim = (width, height)
-                    lr = hr.resize(dim, resample=pil_image.BICUBIC)
-                else:
-                    lr = img
-                bicubic = lr.resize((lr.width * args.scale, lr.height * args.scale), resample=pil_image.BICUBIC)
+                    img = cv2.resize(img, dim, interpolation = cv2.INTER_AREA)
+
+                bicubic = cv2.resize(img,(img.shape[1] * args.scale, img.shape[0] * args.scale), interpolation = cv2.INTER_CUBIC)
             # bicubic.save(filename2)
 
-                lr,_ = preprocess(lr,device)
+                lr,_ = preprocess(img,device)
                 _, ycbcr = preprocess(bicubic, device)
 
                 preds = model(lr).clamp(0.0, 1.0)
@@ -144,10 +140,10 @@ for data in subfolders:
 
                 output = np.array([preds, ycbcr[..., 1], ycbcr[..., 2]]).transpose([1, 2, 0])
                 output = np.clip(convert_ycbcr_to_rgb(output), 0.0, 255.0).astype(np.uint8)
-                output = pil_image.fromarray(output)
+                cv2.imwrite(filename, output)
 
-                output.save(filename)
-            except:
+            except Exception as e:
+                print(e)
                 err.append(name)
 
 print(err)
