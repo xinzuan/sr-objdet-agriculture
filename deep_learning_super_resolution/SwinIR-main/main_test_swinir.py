@@ -211,7 +211,7 @@ def setup(args):
         dataset_folder = os.path.join( os.path.join(args.folder_lq, args.agri), args.type)
         save_dir = f'{dataset_folder}/swinir_{args.task}_x{args.scale}'
         if args.downsample:
-            save_dir = f'{dataset_folder}/downscale_swinir_{args.task}_x{args.scale}'
+            save_dir = f'{dataset_folder}/downsample_swinir_{args.task}_x{args.scale}'
         if args.large_model:
             save_dir += '_large'
         folder = os.path.join(dataset_folder,args.folder_name)
