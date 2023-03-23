@@ -84,6 +84,7 @@ for dataset in datasets:
         train_config['val'] = val_path
         train_config['test'] = test_path
 
+    print(train_config)
     with open(os.path.join(dataset_path, dataset, 'config.yaml'), 'w') as fin:
         yaml.safe_dump(train_config, fin)
 
@@ -97,7 +98,7 @@ for dataset in datasets:
     train_command = [
         f'python train.py --workers {args.workers} --device {args.device} --batch-size {args.batch_size} --epoch {args.epoch}',
         '--cfg cfg/training/yolov7.yaml --weights yolov7_training.pt --hyp data/hyp.scratch.custom.yaml',
-        f'--data ../../dataset/{dataset}/base.yaml',
+        f'--data ../../dataset/{dataset}/config.yaml',
         f'--img-size {img_res * args.sr_multiplier} {img_res * args.sr_multiplier}',
         f'--name {dataset}',
         f'--project ../../results/{args.benchmark_type}/yolov7/train'
