@@ -14,7 +14,7 @@ parser.add_argument('--sr-multiplier', type=int, help='Resolution upscaling mult
 parser.add_argument('--device', default='0', help='Cuda device, i.e. 0 or 0,1,2,3 or cpu')
 parser.add_argument('--workers', type=int, default=8, help='Number of data loading workers')
 parser.add_argument('--batch-size', type=int, default=16, help='Batch size')
-parser.add_argument('--total-iterations', type=int, default=5000, help='Total training iterations')
+parser.add_argument('--epoch', type=int, default=300, help='Number of epochs')
 parser.add_argument('--dataset-path', type=str, default='dataset', help='Path to root dataset directory')
 args = parser.parse_args()
 
@@ -93,12 +93,11 @@ for dataset in datasets:
 
     total_train_imgs = dataset_configs[dataset]['total_train_imgs']
     img_res = dataset_configs[dataset]['img_res']
-    epoch = args.total_iterations // (total_train_imgs // args.batch_size)
 
     train_command = [
-        f'python train.py --workers {args.workers} --device {args.device} --batch-size {args.batch_size} --epoch {epoch}',
+        f'python train.py --workers {args.workers} --device {args.device} --batch-size {args.batch_size} --epoch {args.epoch}',
         '--cfg cfg/training/yolov7.yaml --weights yolov7_training.pt --hyp data/hyp.scratch.custom.yaml',
-        f'--data ../../dataset/{dataset}/config.yaml',
+        f'--data ../../dataset/{dataset}/base.yaml',
         f'--img-size {img_res * args.sr_multiplier} {img_res * args.sr_multiplier}',
         f'--name {dataset}',
         f'--project ../../results/{args.benchmark_type}/yolov7/train'
